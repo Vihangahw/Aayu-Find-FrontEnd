@@ -5,7 +5,7 @@ export default function Navbar() {
     return (
         <nav className="bg-green-900 text-white p-4">
             <div className="container mx-auto flex justify-between items-center">
-                <Link href="/home">
+                <Link href="/">
                     <Image
                         src="/assets/images/aayu-find.png" // Adjust the path
                         alt="Aayu Find Logo"
@@ -15,7 +15,7 @@ export default function Navbar() {
                     />
                 </Link>
                 <div className="flex space-x-4">
-                    <Link href="/home">Home</Link>
+                    <Link href="/">Home</Link>
                     <Link href="/about">About</Link>
                     <Link href="/plants">Plants</Link>
                     <Link href="/login">Login</Link>
