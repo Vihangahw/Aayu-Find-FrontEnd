@@ -53,10 +53,10 @@ export default function HomePage() {
     }
 
     const formData = new FormData();
-    formData.append("image", croppedBlob, "cropped-image.png");
+    formData.append("file", croppedBlob, "cropped-lead.png");
 
     try {
-      const response = await fetch("http://127.0.0.1:5002/plant-ensemble", {
+      const response = await fetch("http://localhost:8000/predict", {
         method: "POST",
         body: formData,
       });
@@ -65,9 +65,9 @@ export default function HomePage() {
       const result = JSON.parse(text);
 
       if (response.ok) {
-        setUploadMessage(`Identified as: ${result?.consensus_prediction?.class_name || "Unknown"}`);
+        setUploadMessage(`Identified as: ${result.final_class || "Unknown"} (Confidence: ${result.final_confidence?.toFixed(2) || "N/A"})`);
       } else {
-        setUploadMessage(`Upload Failed: ${result.error}`);
+        setUploadMessage(`Upload Failed: ${result.detail || "Unknown error"}`);
       }
     } catch (error) {
       console.error("Error uploading:", error);
