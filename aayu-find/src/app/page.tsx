@@ -1,77 +1,177 @@
 "use client";
-import React, {JSX, useState} from "react";
+import React, { useState, useRef, useCallback } from "react";
+import Cropper from "react-easy-crop";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Slider } from "@mui/material";
+import type { Area } from "react-easy-crop";
+import getCroppedImg from "../utils/cropImage";
 
-export default function Home(): JSX.Element {
-    const [selectedImage, setSelectedImage] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+export default function HomePage() {
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+  const [cropModalOpen, setCropModalOpen] = useState<boolean>(false);
+  const [confidence, setConfidence] = useState<number | null>(null); // New state for confidence value
 
-    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-        const file: File | undefined = event.target.files?.[0];
-        if (file) {
-            setSelectedImage(file);
-            setPreviewUrl(URL.createObjectURL(file)); // Generate preview URL
-        }
-    };
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
 
-    const handleUpload = async (): Promise<void> => {
-        if (!selectedImage) {
-            alert("Please select an image first.");
-            return;
-        }
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-        const formData = new FormData();
-        formData.append("file", selectedImage);
+  const handleClickUpload = () => fileInputRef.current?.click();
 
-        try {
-            const response = await fetch("/api/upload", {
-                method: "POST",
-                body: formData,
-            });
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      setPreviewUrl(URL.createObjectURL(file));
+      setCropModalOpen(true);
+    }
+  };
 
-            if (response.ok) {
-                alert("Image uploaded successfully!");
-            } else {
-                alert("Upload failed.");
-            }
-        } catch (error) {
-            console.error("Error uploading:", error);
-            alert("Error uploading image.");
-        }
-    };
+  const handleCropComplete = useCallback((_ : Area, croppedAreaPixels: Area) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
 
-    return (
-        <section className="flex flex-col items-center justify-center min-h-screen text-center">
-            <h1 className="text-4xl font-bold text-green-600">Upload Plant Image</h1>
-            <p className="text-lg text-gray-600 mt-4">
-                Upload a plant image to get it recognized.
-            </p>
+  const showCroppedImage = useCallback(async () => {
+    try {
+      const croppedImage = await getCroppedImg(previewUrl!, croppedAreaPixels);
+      setCroppedBlob(croppedImage);
 
-            {/* Image Upload Input */}
-            <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="mt-6 px-4 py-2 border rounded-lg cursor-pointer"
-            />
+      const croppedUrl = URL.createObjectURL(croppedImage);
+      setPreviewUrl(croppedUrl);
+      setCropModalOpen(false);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [previewUrl, croppedAreaPixels]);
 
-            {/* Preview the Image */}
-            {previewUrl && (
-                <div className="mt-4">
-                    <img
-                        src={previewUrl}
-                        alt="Uploaded Preview"
-                        className="w-64 h-64 object-cover rounded-lg shadow-md"
-                    />
-                </div>
-            )}
+  const handleUpload = async () => {
+    if (!croppedBlob) {
+      alert("Please crop the image before uploading.");
+      return;
+    }
 
-            {/* Upload Button */}
-            <button
-                onClick={handleUpload}
-                className="mt-6 px-6 py-3 bg-blue-500 text-white rounded-lg text-lg hover:bg-blue-600 transition"
-            >
-                Upload Image
+    const formData = new FormData();
+    formData.append("file", croppedBlob, "cropped-lead.png");
+
+    try {
+      const response = await fetch("http://localhost:8000/predict", {
+        method: "POST",
+        body: formData,
+      });
+
+      const text = await response.text();
+      const result = JSON.parse(text);
+
+      if (response.ok) {
+        const plant = result.final_class || "Unknown";
+        const conf = result.final_confidence || 0;
+        setConfidence(conf); // Set the confidence value
+        setUploadMessage(`Identified as: ${plant} (Confidence: ${conf.toFixed(2)})`);
+      } else {
+        setUploadMessage(`Upload Failed: ${result.detail || "Unknown error"}`);
+        setConfidence(null); // Reset confidence on failure
+      }
+    } catch (error) {
+      console.error("Error uploading:", error);
+      setUploadMessage("Error connecting to server.");
+      setConfidence(null); // Reset confidence on error
+    }
+  };
+
+  const handleReset = () => {
+    setSelectedImage(null);
+    setPreviewUrl(null);
+    setUploadMessage(null);
+    setCroppedBlob(null);
+    setConfidence(null); // Reset confidence on reset
+  };
+
+  return (
+    <section className="flex flex-col items-center justify-center min-h-screen text-center p-4" style={{ backgroundImage: "url('/assets/images/plant-hd.jpg')" }}>
+      <h1 className="text-7xl font-bold text-black-600">Welcome to Aayu Find</h1>
+      <p className="text-lg text-sm text-black-600 mt-8">
+        Sri Lanka is home to a vast and diverse range of Ayurvedic medicinal plants, renowned for their healing properties and their role<br /> in traditional medicine for centuries.
+        Aayu Find is an innovative platform that combines the power of AI-driven plant recognition with the <br />wisdom of Ayurvedic healing, making it easier for
+        you to identify, understand, and utilize medicinal plants for better health and well-being.<br />
+        <br />
+        At Aayu Find, we aim to bridge the gap between ancient Ayurvedic knowledge and modern technology,
+        empowering enthusiast, <br />Ayurveda practitioner, or someone looking for natural alternatives to manage chronic conditions, our platform <br />is here to guide you on your journey to holistic wellness. 🌿✨</p>
+
+      {/* Image Upload Box */}
+      <div className="mt-10 w-80 h-80 max-w-2xl bg-gray bg-opacity-10 backdrop-blur-md border border-gray-500 rounded-lg p-8 text-center text-white shadow-lg">
+        <div className="w-64 h-64 border-0.9 border-dashed border-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-800 transition cursor-pointer"
+             onDrop={(e) => {
+               e.preventDefault();
+               const file = e.dataTransfer.files[0];
+               if (file) {
+                 setSelectedImage(file);
+                 setPreviewUrl(URL.createObjectURL(file));
+                 setCropModalOpen(true);
+               }
+             }}
+             onDragOver={(e) => e.preventDefault()}
+             onClick={handleClickUpload}>
+          {previewUrl ? (
+            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover rounded-lg shadow-md" />
+          ) : (
+            <p className="text-gray-400">Drag & Drop or Click to Upload<br />Your Plant Image</p>
+          )}
+        </div>
+
+        <input type="file" accept=".jpg,.jpeg,.png" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
+
+        {previewUrl && (
+          <>
+            <button onClick={handleUpload} className="mt-4 w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-950 transition">
+              Upload Image
             </button>
-        </section>
-    );
+            <button onClick={handleReset} className="mt-2 w-full px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 transition">
+              Reset Image
+            </button>
+          </>
+        )}
+
+        {uploadMessage && (
+          <div className="mt-4 bg-black bg-opacity-60 text-white px-4 py-2 rounded-lg shadow-md">
+            <p className="text-sm font-medium tracking-wide">🌿 <span className="text-green-400">{uploadMessage}</span></p>
+            {confidence !== null && (
+              <progress
+                value={confidence * 100} // Convert to percentage (0-100)
+                max="100"
+                className="w-full h-2 mt-2 bg-gray-700 rounded-full overflow-hidden"
+              >
+                <span className="bg-green-500 h-full block" style={{ width: `${confidence * 100}%` }} />
+              </progress>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Crop Modal */}
+      <Dialog open={cropModalOpen} fullWidth maxWidth="sm">
+        <DialogTitle>Crop Your Image</DialogTitle>
+        <DialogContent>
+          <div className="relative w-full h-96 bg-black">
+            <Cropper
+              image={previewUrl!}
+              crop={crop}
+              zoom={zoom}
+              aspect={1}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={handleCropComplete}
+            />
+          </div>
+          <Slider value={zoom} min={1} max={3} step={0.1} onChange={(e, z) => setZoom(z as number)} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCropModalOpen(false)}>Cancel</Button>
+          <Button onClick={showCroppedImage} variant="contained" color="primary">Crop</Button>
+        </DialogActions>
+      </Dialog>
+    </section>
+  );
 }
