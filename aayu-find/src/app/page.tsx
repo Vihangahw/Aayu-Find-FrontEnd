@@ -15,9 +15,8 @@ import {
   Hand,
   LucideIcon
 } from "lucide-react"
-import getCroppedImg from "../utils/cropImage" // Assuming this utility function exists
+import getCroppedImg from "../utils/cropImage" 
 
-// --- Content sourced from 'mentor first two chapters.docx' ---
 
 const focusPlants = [
   {
@@ -25,33 +24,32 @@ const focusPlants = [
     title: "Heen Bovitiya (Osbeckia octandra)",
     description:
         "A vital plant in traditional medicine, valued for its potential in managing chronic conditions like diabetes and liver ailments.",
-    image: "/AayuFind-Heen-Bovitiya.png", // Placeholder image path
+    image: "/AayuFind-Heen-Bovitiya.JPG", 
   },
   {
     id: "yakinaran",
     title: "Yaki Naran (Atalantia ceylanica)",
     description:
         "Used in remedies for high cholesterol and NAFLD. Its visual similarity to other species makes accurate identification crucial.",
-    image: "/AayuFind-Yaki-Naran.png", // Placeholder image path
+    image: "/AayuFind-Yaki-Naran.JPG", 
   },
   {
     id: "kowakka",
     title: "Kowakka (Coccinia grandis)",
     description:
         "Also known as Ivy Gourd, this plant is recognized for its therapeutic properties and is often considered a weed, highlighting the untapped potential in local flora.",
-    image: "/AayuFind-Kowakka.png", // Placeholder image path
+    image: "/AayuFind-Kowakka.JPG", 
   },
   {
     id: "karapincha",
     title: "Karapincha (Murraya koenigii)",
     description:
         "Commonly used in daily cuisine and traditional medicine for its various health benefits, including managing cholesterol.",
-    image: "/AayuFind-Karapincha.png", // Placeholder image path
+    image: "/AayuFind-Karapincha.JPG", 
   },
 ]
 
 export default function HomePage() {
-  // --- State and handlers from original page.tsx ---
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [uploadMessage, setUploadMessage] = useState<string | null>(null)

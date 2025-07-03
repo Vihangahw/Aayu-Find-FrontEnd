@@ -114,8 +114,8 @@ export default function AboutPage() {
                         </p>
                     </div>
                     <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-2xl mx-auto">
-                        <TeamMemberCard name="Mr. Vihanga Wijesinghe" role="Project Researcher" avatar="/AayuFind-Student-Avatar.png" />
-                        <TeamMemberCard name="Mr. Athindu Umayanga" role="Project Supervisor" avatar="/AayuFind-Doctor-Avatar.png" />
+                        <TeamMemberCard name="Mr. Vihanga Wijesinghe" role="Project Researcher" avatar="/AayuFind-Vihanga.JPG" />
+                        <TeamMemberCard name="Mr. Athindu Umayanga" role="Project Supervisor" avatar="/AayuFind-Athindu.JPG" />
                     </div>
                 </div>
             </section>

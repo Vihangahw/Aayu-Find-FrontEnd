@@ -6,7 +6,7 @@ const plantsData = [
     {
         name: "Heen Bovitiya",
         scientificName: "Osbeckia octandra",
-        image: "/AayuFind-Heen-Bovitiya.png",
+        image: "/AayuFind-Heen-Bovitiya.JPG",
         description: "A cornerstone of Sri Lankan traditional medicine, Heen Bovitiya is highly valued for its therapeutic properties. It plays a significant role in natural remedies, particularly for liver-related conditions.",
         medicinalUse: "Traditionally used to support the treatment of chronic conditions such as Non-Alcoholic Fatty Liver Disease (NAFLD) and high cholesterol. Its properties are believed to aid in liver protection and function.",
         identificationNotes: "Often confused with the common 'Bovitiya' plant. Key differences are its smaller leaf size and darker green color. Accurate identification is crucial to ensure its effective use in remedies."
@@ -14,7 +14,7 @@ const plantsData = [
     {
         name: "Yaki Naran",
         scientificName: "Atalantia ceylanica",
-        image: "/AayuFind-Yaki-Naran.png",
+        image: "/AayuFind-Yaki-Naran.JPG",
         description: "Yaki Naran is a vital plant in Ayurvedic practices, recognized for its potential in managing metabolic conditions. It is a prime example of a plant where accurate identification is critical due to its close resemblance to other species.",
         medicinalUse: "Primarily utilized for its potential to help manage high cholesterol levels and conditions like diabetes. It's a key ingredient in many traditional preparations aimed at improving metabolic health.",
         identificationNotes: "Visually very similar to the common Organic Lime ('Dehi'). It has oval-shaped leaves and smooth edges, with only subtle differences in vein patterns that are difficult for a non-specialist to distinguish."
@@ -22,7 +22,7 @@ const plantsData = [
     {
         name: "Kowakka",
         scientificName: "Coccinia grandis",
-        image: "/AayuFind-Kowakka.png",
+        image: "/AayuFind-Kowakka.JPG",
         description: "Also known as Ivy Gourd, Kowakka is a fast-growing plant that is often dismissed as a common weed. However, it holds significant medicinal value, representing the untapped potential of local Sri Lankan flora.",
         medicinalUse: "Valued for its anti-diabetic properties, it is used in managing blood sugar levels. Its inclusion in the project highlights how even commonly overlooked plants can provide affordable healthcare options.",
         identificationNotes: "Features glossy, elongated leaves. While distinct, under certain lighting conditions or at different growth stages, its leaves can appear similar to other common climbing plants and vines."
@@ -30,7 +30,7 @@ const plantsData = [
     {
         name: "Karapincha",
         scientificName: "Murraya koenigii",
-        image: "/AayuFind-Karapincha.png",
+        image: "/AayuFind-Karapincha.JPG",
         description: "A staple in Sri Lankan cuisine, Karapincha (Curry Leaf) is as much a medicinal herb as it is a culinary one. It is one of the most accessible and widely used plants for daily health support.",
         medicinalUse: "Commonly used in traditional remedies for managing high cholesterol and diabetes. Its widespread availability makes it an important plant for promoting natural, cost-effective healthcare.",
         identificationNotes: "Characterized by its distinctively shaped compound leaves. While easily recognizable for many, automated systems must still learn to distinguish it from other plants with similar leaf arrangements in cluttered environments."
