@@ -13,10 +13,10 @@ import {
   ScanSearch,
   BrainCircuit,
   Hand,
-  LucideIcon
+  LucideIcon,
+  Download
 } from "lucide-react"
-import getCroppedImg from "../utils/cropImage" 
-
+import getCroppedImg from "../utils/cropImage"
 
 const focusPlants = [
   {
@@ -24,28 +24,28 @@ const focusPlants = [
     title: "Heen Bovitiya (Osbeckia octandra)",
     description:
         "A vital plant in traditional medicine, valued for its potential in managing chronic conditions like diabetes and liver ailments.",
-    image: "/AayuFind-Heen-Bovitiya.JPG", 
+    image: "/AayuFind-Heen-Bovitiya.JPG",
   },
   {
     id: "yakinaran",
     title: "Yaki Naran (Atalantia ceylanica)",
     description:
         "Used in remedies for high cholesterol and NAFLD. Its visual similarity to other species makes accurate identification crucial.",
-    image: "/AayuFind-Yaki-Naran.JPG", 
+    image: "/AayuFind-Yaki-Naran.JPG",
   },
   {
     id: "kowakka",
     title: "Kowakka (Coccinia grandis)",
     description:
         "Also known as Ivy Gourd, this plant is recognized for its therapeutic properties and is often considered a weed, highlighting the untapped potential in local flora.",
-    image: "/AayuFind-Kowakka.JPG", 
+    image: "/AayuFind-Kowakka.JPG",
   },
   {
     id: "karapincha",
     title: "Karapincha (Murraya koenigii)",
     description:
         "Commonly used in daily cuisine and traditional medicine for its various health benefits, including managing cholesterol.",
-    image: "/AayuFind-Karapincha.JPG", 
+    image: "/AayuFind-Karapincha.JPG",
   },
 ]
 
@@ -55,24 +55,54 @@ export default function HomePage() {
   const [uploadMessage, setUploadMessage] = useState<string | null>(null)
   const [cropModalOpen, setCropModalOpen] = useState<boolean>(false)
   const [confidence, setConfidence] = useState<number | null>(null)
+  const [predictedPlant, setPredictedPlant] = useState<string | null>(null)
 
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
   const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleClickUpload = () => fileInputRef.current?.click()
 
+  const validateImageFile = (file: File): boolean => {
+    const validTypes = ["image/jpeg", "image/jpg", "image/png"]
+    return validTypes.includes(file.type)
+  }
+
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      setSelectedImage(file)
-      setPreviewUrl(URL.createObjectURL(file))
-      setCropModalOpen(true)
-      setUploadMessage(null) // Reset message on new image
-      setConfidence(null)
+      if (validateImageFile(file)) {
+        setSelectedImage(file)
+        setPreviewUrl(URL.createObjectURL(file))
+        setCropModalOpen(true)
+        setUploadMessage(null)
+        setConfidence(null)
+        setPredictedPlant(null)
+      } else {
+        setUploadMessage("Invalid file format. Please upload a .jpg, .jpeg, or .png file.")
+        if (fileInputRef.current) fileInputRef.current.value = ""
+      }
+    }
+  }
+
+  const handleDragDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    const file = event.dataTransfer.files[0]
+    if (file) {
+      if (validateImageFile(file)) {
+        setSelectedImage(file)
+        setPreviewUrl(URL.createObjectURL(file))
+        setCropModalOpen(true)
+        setUploadMessage(null)
+        setConfidence(null)
+        setPredictedPlant(null)
+      } else {
+        setUploadMessage("Invalid file format. Please upload a .jpg, .jpeg, or .png file.")
+        if (fileInputRef.current) fileInputRef.current.value = ""
+      }
     }
   }
 
@@ -90,12 +120,13 @@ export default function HomePage() {
       setCropModalOpen(false)
     } catch (e) {
       console.error(e)
+      setUploadMessage("Error cropping image. Please try again.")
     }
   }, [previewUrl, croppedAreaPixels])
 
   const handleUpload = async () => {
     if (!croppedBlob) {
-      alert("Please select and crop the image before identifying.")
+      setUploadMessage("Please select and crop the image before identifying.")
       return
     }
 
@@ -114,16 +145,42 @@ export default function HomePage() {
       if (response.ok) {
         const plant = result.final_class || "Unknown"
         const conf = result.final_confidence || 0
+        setPredictedPlant(plant.toLowerCase())
         setConfidence(conf)
         setUploadMessage(`Identified as: ${plant}`)
       } else {
+        setPredictedPlant(null)
         setUploadMessage(`Upload Failed: ${result.detail || "Unknown error"}`)
         setConfidence(null)
       }
     } catch (error) {
       console.error("Error uploading:", error)
+      setPredictedPlant(null)
       setUploadMessage("Error connecting to the identification server.")
       setConfidence(null)
+    }
+  }
+
+  const handleDownloadRecipe = () => {
+    if (!predictedPlant) return
+
+    const plantFileMap: { [key: string]: string } = {
+      "heen-bovitiya": "/assets/bovitiya.txt",
+      "yakinaran": "/assets/yakinaran.txt",
+      "kowakka": "/assets/kowakka.txt",
+      "karapincha": "/assets/karapincha.txt",
+    }
+
+    const fileUrl = plantFileMap[predictedPlant]
+    if (fileUrl) {
+      const link = document.createElement("a")
+      link.href = fileUrl
+      link.download = `${predictedPlant}-recipe.txt`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } else {
+      setUploadMessage("No recipe available for this plant.")
     }
   }
 
@@ -133,24 +190,26 @@ export default function HomePage() {
     setUploadMessage(null)
     setCroppedBlob(null)
     setConfidence(null)
+    setPredictedPlant(null)
+    setCrop({ x: 0, y: 0 })
+    setZoom(1)
+    setCroppedAreaPixels(null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
   }
 
-  // --- JSX structure ---
   return (
       <main className="overflow-hidden bg-stone-900">
-        {/* Hero Section with Integrated Plant Identifier */}
         <section
             className="relative min-h-screen flex items-center justify-center py-20"
             style={{ backgroundImage: "url('/assets/images/plant-hd.jpg')" }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/60 to-black/90" />
           <div className="container mx-auto px-4 md:px-6 relative z-10">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
               <div className="text-white">
-                <span className="text-amber-500 text-sm tracking-widest uppercase font-medium">AayuFind Project</span>
+                <span className="text-amber-500 text-sm tracking-widest uppercase font-medium">Aayu Find Project</span>
                 <h1 className="text-5xl md:text-7xl font-serif font-light tracking-wide leading-tight my-6">
                   Ayurvedic Plant Recognition
                 </h1>
@@ -161,17 +220,12 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {/* AayuFind Identifier Component */}
               <div className="bg-stone-800/50 backdrop-blur-md border border-stone-700 rounded-lg p-8 text-center text-white shadow-2xl">
                 <h2 className="text-2xl font-serif mb-4">Identify a Medicinal Plant</h2>
                 <div
                     className="w-full h-64 border-2 border-dashed border-stone-500 rounded-lg flex items-center justify-center hover:bg-stone-700/50 transition cursor-pointer bg-cover bg-center"
                     style={{ backgroundImage: previewUrl ? `url(${previewUrl})` : "none" }}
-                    onDrop={(e) => {
-                      e.preventDefault()
-                      const file = e.dataTransfer.files[0]
-                      if (file) handleImageChange({ target: { files: [file] } } as any)
-                    }}
+                    onDrop={handleDragDrop}
                     onDragOver={(e) => e.preventDefault()}
                     onClick={!previewUrl ? handleClickUpload : () => setCropModalOpen(true)}
                 >
@@ -213,6 +267,15 @@ export default function HomePage() {
                           <>
                             <p className="text-xs text-stone-300 mt-1">Confidence: {(confidence * 100).toFixed(2)}%</p>
                             <progress value={confidence * 100} max="100" className="w-full h-1.5 mt-2 rounded-full" />
+                            {predictedPlant && (
+                                <button
+                                    onClick={handleDownloadRecipe}
+                                    className="mt-4 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg shadow-md transition flex items-center justify-center"
+                                >
+                                  <Download className="w-5 h-5 mr-2" />
+                                  Download Recipe
+                                </button>
+                            )}
                           </>
                       )}
                     </div>
@@ -222,7 +285,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Core Features Section */}
         <section className="py-24 bg-stone-900 text-white">
           <div className="container mx-auto px-4 md:px-6">
             <div className="text-center mb-16">
@@ -254,7 +316,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Focus Plants Section */}
         <section className="py-24 bg-stone-800/50">
           <div className="container mx-auto px-4 md:px-6">
             <div className="text-center mb-16 text-white">
@@ -292,7 +353,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* --- Start: New Research Challenges Section --- */}
         <section className="py-24 bg-stone-900">
           <div className="container mx-auto px-4 md:px-6">
             <div className="text-center mb-16 text-white">
@@ -328,9 +388,7 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-        {/* --- End: New Research Challenges Section --- */}
 
-        {/* Newsletter Signup Section */}
         <section className="py-24 bg-amber-50/5">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-4xl mx-auto">
@@ -343,7 +401,7 @@ export default function HomePage() {
                     Subscribe to receive updates on our project milestones, dataset publications, and research findings.
                   </p>
                 </div>
-                <form className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto mt-8">
+                <div className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto mt-8">
                   <input
                       type="email"
                       placeholder="Enter your email"
@@ -355,13 +413,12 @@ export default function HomePage() {
                   >
                     Subscribe
                   </button>
-                </form>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Crop Modal (from original page.tsx) */}
         <Dialog open={cropModalOpen} onClose={() => setCropModalOpen(false)} fullWidth maxWidth="sm">
           <DialogTitle sx={{ bgcolor: "#292524", color: "white" }}>Crop Your Image</DialogTitle>
           <DialogContent sx={{ bgcolor: "#292524" }}>
@@ -404,7 +461,6 @@ export default function HomePage() {
   )
 }
 
-// Helper component for feature cards to keep the code clean
 const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
     <div className="bg-stone-800/50 p-8 rounded-lg text-center transform hover:-translate-y-2 transition-transform duration-300">
       <div className="flex justify-center items-center mb-4">
@@ -415,7 +471,6 @@ const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; titl
     </div>
 )
 
-// Helper component for the new challenge cards
 const ChallengeCard = ({ Icon, title, description }: { Icon: LucideIcon; title: string; description: string }) => (
     <div className="bg-stone-800/60 border border-stone-700/50 p-6 rounded-lg text-center">
       <div className="flex justify-center items-center mb-4">
