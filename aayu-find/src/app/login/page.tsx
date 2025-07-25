@@ -11,7 +11,7 @@ export default function LoginPage() {
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault()
-        setError('') // Reset error message
+        setError('') 
 
         if (!email || !password) {
             setError('Please enter both email and password.')

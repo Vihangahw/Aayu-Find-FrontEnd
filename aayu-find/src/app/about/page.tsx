@@ -49,7 +49,7 @@ export default function AboutPage() {
 
                     <div className="mt-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                         <div>
-                            <img src="/AayuFind-Yaki-Naran.png" alt="Visually similar plant leaves" className="rounded-xl shadow-2xl" />
+                            <img src="/visual-similar.png" alt="Visually similar plant leaves" className="rounded-xl shadow-2xl" />
                         </div>
                         <div>
                             <h3 className="text-3xl font-serif font-light text-white">Why Identification is Difficult</h3>

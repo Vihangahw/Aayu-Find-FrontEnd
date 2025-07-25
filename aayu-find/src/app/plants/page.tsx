@@ -2,7 +2,7 @@ import React from 'react'
 import { HeartPulse, Eye, Leaf } from 'lucide-react'
 
 const plantsData = [
-    // ... plant data remains the same ...
+    
     {
         name: "Heen Bovitiya",
         scientificName: "Osbeckia octandra",
